@@ -1,32 +1,153 @@
 package jrails;
 
-import java.util.List;
+import java.util.*;
+import java.io.*;
+import java.lang.reflect.*;
 
 public class Model {
+    private static String className;
+    private static int numItems = 0;
+    private static Map<Integer, Object> db = new HashMap<>();
+    private static String filename = "./db.txt";
+
+    private int id = 0;
+    
 
     public void save() {
-        /* this is an instance of the current model */
-        throw new UnsupportedOperationException();
+        try {
+            className = this.getClass().getName();
+            File dbFile = new File(filename);
+            if (!dbFile.exists() || !dbFile.isFile()) {
+                dbFile.createNewFile();
+                writeTitleRow();
+            }
+
+            if (id == 0) {
+                numItems++;
+                this.id = numItems;
+                db.put(this.id, this); 
+                System.out.println("Put " + this.id + " into db for the first time");
+                FileWriter fw = new FileWriter(filename, true);
+                fw.write(makeLine(this, this. id));
+                fw.close();
+            } else {
+                db.put(this.id, this);
+                System.out.println("Put " + this.id + " into db");
+                writeDbToFile();
+            }
+        } catch (Exception ex) {
+            System.out.println("Exeption " + ex.getCause() + " was found");
+            ex.printStackTrace();
+        }
+    }
+
+    private static void writeTitleRow() {
+        try {
+            Field[] fs = Class.forName(className).getFields();
+            StringBuilder sb = new StringBuilder("id"); 
+            for (Field f : fs) {
+                sb.append(" | ").append(f.getName());
+            }
+            sb.append("\n");
+            FileWriter fw = new FileWriter(filename);
+            fw.write(sb.toString());
+            fw.close();
+        } catch (Exception ex) {
+            System.out.println("Exception " + ex.getCause() + " was found");
+            ex.printStackTrace();
+        }
+    }
+
+    private static String makeLine(Object o, int id) {
+        try {
+            StringBuilder sb = new StringBuilder(String.valueOf(id));
+            Field[] fs = o.getClass().getFields();
+            for (Field f : fs) {
+                sb.append(" | ").append(f.get(o));
+            }
+            sb.append("\n");
+            return sb.toString();
+        } catch (Exception ex) {
+            System.out.println("Exception " + ex.getCause() + " was found");
+            ex.printStackTrace();
+            return "";
+        }
+    }
+
+    // rewrite db map to db file
+    private static void writeDbToFile() {
+        try {
+            writeTitleRow();
+            FileWriter fw = new FileWriter(filename, true);
+            for (Integer id : db.keySet()) {
+                String line = makeLine(db.get(id), id);
+                fw.write(line);
+            }
+            fw.close();
+
+        } catch (Exception ex) {
+            System.out.println("Exception " + ex.getCause() + " was found");
+            ex.printStackTrace();
+        }
     }
 
     public int id() {
-        throw new UnsupportedOperationException();
+        return this.id;
     }
 
     public static <T> T find(Class<T> c, int id) {
-        throw new UnsupportedOperationException();
+        if (!db.containsKey(id)) {
+            System.out.println("Id " + id + " not found in db");
+            return null;
+        }
+        try {
+            Object obj = db.get(id);
+            T inst = c.getConstructor().newInstance();
+            c.getMethod("setId", int.class).invoke(inst, id);
+            for (int i = 0; i < c.getFields().length; i++) {
+                Field f = c.getFields()[i];
+                Field val = obj.getClass().getFields()[i];
+                f.set(inst, val.get(obj));
+            }
+            return inst;
+
+        } catch (Exception ex) {
+            System.out.println("Exception " + ex.getCause() + " found\n");
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public void setId(int i) {
+        this.id = i;
     }
 
     public static <T> List<T> all(Class<T> c) {
-        // Returns a List<element type>
-        throw new UnsupportedOperationException();
+        List<T> elts = new ArrayList<>();
+        if (db.isEmpty()) { return elts; }
+        for (Integer id : db.keySet()) {
+            elts.add(find(c, id));
+        }
+        return elts;
     }
 
     public void destroy() {
-        throw new UnsupportedOperationException();
+        if (!db.containsKey(this.id)) {
+            System.out.println("This instance " + this.id + " is not in the db");
+            throw new RuntimeException();
+        }
+        db.remove(this.id);
+        writeDbToFile();
     }
 
     public static void reset() {
-        throw new UnsupportedOperationException();
+        try {
+            db.clear();
+            new PrintWriter(filename).close();
+            numItems = 0;
+        } catch (Exception ex) {
+            System.out.println("Exception " + ex.getCause() + "was found");
+            ex.printStackTrace();
+        }
     }
 }

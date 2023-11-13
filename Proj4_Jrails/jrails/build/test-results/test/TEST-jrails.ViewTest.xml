@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="jrails.ViewTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2023-11-13T20:13:59" hostname="MacBook-Air.local" time="0.011">
+  <properties/>
+  <testcase name="simpleViewTest" classname="jrails.ViewTest" time="0.005"/>
+  <testcase name="brTest" classname="jrails.ViewTest" time="0.001"/>
+  <testcase name="testPTag" classname="jrails.ViewTest" time="0.001"/>
+  <testcase name="testSingleTag" classname="jrails.ViewTest" time="0.0"/>
+  <testcase name="testEmptyHtml" classname="jrails.ViewTest" time="0.0"/>
+  <testcase name="h1" classname="jrails.ViewTest" time="0.003"/>
+  <testcase name="empty" classname="jrails.ViewTest" time="0.0"/>
+  <testcase name="divTest" classname="jrails.ViewTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
