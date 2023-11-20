@@ -47,7 +47,6 @@ public class ViewTest {
     @Test
     public void testSingleTag() {
         Html pTag = View.p(new Html("Hello, World!"));
-
         assertEquals("<p>Hello, World!</p>", pTag.toString());
     }
 

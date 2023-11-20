@@ -8,15 +8,14 @@ public class Model {
     private static String className;
     private static int numItems = 0;
     private static Map<Integer, Object> db = new HashMap<>();
-    private static String filename = "./db.txt";
+    private static String filePath = "./db.txt";
 
     private int id = 0;
-    
 
     public void save() {
         try {
             className = this.getClass().getName();
-            File dbFile = new File(filename);
+            File dbFile = new File(filePath);
             if (!dbFile.exists() || !dbFile.isFile()) {
                 dbFile.createNewFile();
                 writeTitleRow();
@@ -26,13 +25,11 @@ public class Model {
                 numItems++;
                 this.id = numItems;
                 db.put(this.id, this); 
-                System.out.println("Put " + this.id + " into db for the first time");
-                FileWriter fw = new FileWriter(filename, true);
-                fw.write(makeLine(this, this. id));
+                FileWriter fw = new FileWriter(filePath, true);
+                fw.write(makeLine(this, this.id));
                 fw.close();
             } else {
                 db.put(this.id, this);
-                System.out.println("Put " + this.id + " into db");
                 writeDbToFile();
             }
         } catch (Exception ex) {
@@ -49,7 +46,7 @@ public class Model {
                 sb.append(" | ").append(f.getName());
             }
             sb.append("\n");
-            FileWriter fw = new FileWriter(filename);
+            FileWriter fw = new FileWriter(filePath);
             fw.write(sb.toString());
             fw.close();
         } catch (Exception ex) {
@@ -68,17 +65,15 @@ public class Model {
             sb.append("\n");
             return sb.toString();
         } catch (Exception ex) {
-            System.out.println("Exception " + ex.getCause() + " was found");
             ex.printStackTrace();
             return "";
         }
     }
 
-    // rewrite db map to db file
     private static void writeDbToFile() {
         try {
             writeTitleRow();
-            FileWriter fw = new FileWriter(filename, true);
+            FileWriter fw = new FileWriter(filePath, true);
             for (Integer id : db.keySet()) {
                 String line = makeLine(db.get(id), id);
                 fw.write(line);
@@ -86,7 +81,6 @@ public class Model {
             fw.close();
 
         } catch (Exception ex) {
-            System.out.println("Exception " + ex.getCause() + " was found");
             ex.printStackTrace();
         }
     }
@@ -97,7 +91,6 @@ public class Model {
 
     public static <T> T find(Class<T> c, int id) {
         if (!db.containsKey(id)) {
-            System.out.println("Id " + id + " not found in db");
             return null;
         }
         try {
@@ -112,7 +105,6 @@ public class Model {
             return inst;
 
         } catch (Exception ex) {
-            System.out.println("Exception " + ex.getCause() + " found\n");
             ex.printStackTrace();
             return null;
         }
@@ -133,7 +125,6 @@ public class Model {
 
     public void destroy() {
         if (!db.containsKey(this.id)) {
-            System.out.println("This instance " + this.id + " is not in the db");
             throw new RuntimeException();
         }
         db.remove(this.id);
@@ -143,10 +134,9 @@ public class Model {
     public static void reset() {
         try {
             db.clear();
-            new PrintWriter(filename).close();
+            new PrintWriter(filePath).close();
             numItems = 0;
         } catch (Exception ex) {
-            System.out.println("Exception " + ex.getCause() + "was found");
             ex.printStackTrace();
         }
     }
